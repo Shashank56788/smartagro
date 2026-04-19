@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Agriculture AI Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .sensor-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sensor-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .sensor-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .sensor-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-healthy { background-color: #10b981; }
+        .status-moderate { background-color: #f59e0b; }
+        .status-stressed { background-color: #ef4444; }
+
+        .alert-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .alert-critical {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+
+        .recommendation-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .metric-large {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .metric-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 1em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            height: 300px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .timestamp {
+            text-align: right;
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-top: 15px;
+        }
+
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+
+        .anomaly-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .anomaly-item {
+            background: #fef2f2;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #ef4444;
+        }
+
+        .anomaly-time {
+            font-size: 0.85em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🌾</span>
+                <span class="logo-text">Smart Agriculture AI</span>
+            </div>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span class="hamburger"></span>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
+                <li><a href="features.html" class="nav-link">Features</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="disease-detection.html" class="nav-link">Disease Detection</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>🌾 Smart Agriculture AI Dashboard</h1>
+            <p class="subtitle">Real-time monitoring and AI-powered decision support system</p>
+            <div style="margin-top: 15px;">
+                <button class="action-button" onclick="fetchRealSensorData()" style="margin-right: 10px;">
+                    🔄 Fetch Latest Data
+                </button>
+                <button class="action-button" onclick="updateDashboard()" style="background: #10b981;">
+                    📊 Refresh Analysis
+                </button>
+                <span id="connectionStatus" style="margin-left: 15px; color: white; font-size: 0.9em;"></span>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Real-time Sensor Data -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <h2 class="card-title">Live Sensor Data</h2>
+                </div>
+                <div class="sensor-data">
+                    <div class="sensor-item">
+                        <div class="sensor-label">Soil Moisture</div>
+                        <div class="sensor-value" id="moisture">--</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-label">Temperature</div>
+                        <div class="sensor-value" id="temperature">--</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-label">Humidity</div>
+                        <div class="sensor-value" id="humidity">--</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-label">Light Intensity</div>
+                        <div class="sensor-value" id="light">--</div>
+                    </div>
+                </div>
+                <div class="timestamp" id="sensorTimestamp">Last updated: --</div>
+            </div>
+
+            <!-- Irrigation Prediction -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">💧</span>
+                    <h2 class="card-title">Irrigation Prediction</h2>
+                </div>
+                <div class="metric-large">
+                    <div class="metric-value" id="irrigationAmount">--</div>
+                    <div class="metric-label">Liters Recommended</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="irrigationProgress" style="width: 0%">0%</div>
+                </div>
+                <div class="recommendation-box" id="irrigationRecommendation">
+                    Analyzing optimal irrigation requirements...
+                </div>
+            </div>
+
+            <!-- Crop Health Classification -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🌱</span>
+                    <h2 class="card-title">Crop Health Status</h2>
+                </div>
+                <div class="metric-large">
+                    <div id="healthStatus">
+                        <span class="status-indicator status-healthy"></span>
+                        <span style="font-size: 1.5em; color: #10b981;" id="healthLabel">Analyzing...</span>
+                    </div>
+                </div>
+                <div class="chart-container" id="healthChart"></div>
+                <div class="recommendation-box" id="healthRecommendation">
+                    Health assessment in progress...
+                </div>
+            </div>
+
+            <!-- Yield Prediction -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📈</span>
+                    <h2 class="card-title">Yield Prediction</h2>
+                </div>
+                <div class="metric-large">
+                    <div class="metric-value" id="yieldAmount">--</div>
+                    <div class="metric-label">Kg per Hectare (Estimated)</div>
+                </div>
+                <div class="recommendation-box">
+                    <strong>Optimal Harvest Date:</strong> <span id="harvestDate">Calculating...</span>
+                </div>
+                <div class="chart-container" id="yieldChart"></div>
+            </div>
+
+            <!-- Anomaly Detection -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">⚠️</span>
+                    <h2 class="card-title">Anomaly Detection</h2>
+                </div>
+                <div id="anomalyStatus" style="margin-bottom: 15px;">
+                    <strong>System Status:</strong> <span id="systemStatus">Monitoring...</span>
+                </div>
+                <ul class="anomaly-list" id="anomalyList">
+                    <li style="text-align: center; color: #666;">No anomalies detected</li>
+                </ul>
+            </div>
+
+            <!-- Active Alerts -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🔔</span>
+                    <h2 class="card-title">Active Alerts</h2>
+                </div>
+                <div id="alertsContainer">
+                    <p style="text-align: center; color: #666;">No active alerts</p>
+                </div>
+            </div>
+
+            <!-- Historical Trends -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <span class="card-icon">📉</span>
+                    <h2 class="card-title">Historical Trends (24 Hours)</h2>
+                </div>
+                <div class="chart-container" id="trendsChart" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Backend API Configuration
+        const BACKEND_URL = 'http://localhost:5000';
+        let isBackendConnected = false;
+        let historicalData = {
+            moisture: [],
+            temperature: [],
+            humidity: [],
+            light: [],
+            timestamps: []
+        };
+
+        // Initialize historical data with 24 empty points
+        function initializeHistoricalData() {
+            const now = new Date();
+            for (let i = 24; i >= 0; i--) {
+                const timestamp = new Date(now - i * 3600000);
+                historicalData.timestamps.push(timestamp);
+                historicalData.moisture.push(null);
+                historicalData.temperature.push(null);
+                historicalData.humidity.push(null);
+                historicalData.light.push(null);
+            }
+        }
+
+        // Update historical data with new reading
+        function addToHistory(moisture, temperature, humidity, light) {
+            historicalData.timestamps.push(new Date());
+            historicalData.moisture.push(moisture);
+            historicalData.temperature.push(temperature);
+            historicalData.humidity.push(humidity);
+            historicalData.light.push(light);
+
+            // Keep only last 25 data points
+            if (historicalData.timestamps.length > 25) {
+                Object.keys(historicalData).forEach(key => {
+                    historicalData[key].shift();
+                });
+            }
+        }
+
+        // Update Dashboard with real backend data
+        async function updateDashboard() {
+            const statusEl = document.getElementById('connectionStatus');
+            
+            try {
+                statusEl.textContent = '⏳ Fetching data from backend...';
+                statusEl.style.color = '#f59e0b';
+                
+                // Fetch comprehensive analysis from backend
+                const response = await fetch(`${BACKEND_URL}/api/analyze`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                isBackendConnected = true;
+                
+                // Update sensor readings
+                const sensorData = data.sensor_readings;
+                document.getElementById('moisture').textContent = sensorData.moisture.toFixed(1) + '%';
+                document.getElementById('temperature').textContent = sensorData.temperature.toFixed(1) + '°C';
+                document.getElementById('humidity').textContent = sensorData.humidity.toFixed(1) + '%';
+                document.getElementById('light').textContent = sensorData.light.toFixed(0) + ' lux';
+                document.getElementById('sensorTimestamp').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                
+                // Add to historical data
+                addToHistory(sensorData.moisture, sensorData.temperature, sensorData.humidity, sensorData.light);
+                
+                // Update irrigation prediction
+                const irrigation = data.irrigation;
+                document.getElementById('irrigationAmount').textContent = irrigation.irrigation_liters_per_sqm.toFixed(1);
+                const percentage = Math.round((irrigation.irrigation_liters_per_sqm / 100) * 100);
+                document.getElementById('irrigationProgress').style.width = percentage + '%';
+                document.getElementById('irrigationProgress').textContent = percentage + '%';
+                document.getElementById('irrigationRecommendation').innerHTML = irrigation.recommendation;
+                
+                // Update crop health
+                const health = data.crop_health;
+                const healthIndicator = document.querySelector('#healthStatus .status-indicator');
+                const statusClass = health.health_status === 'Healthy' ? 'status-healthy' : 
+                                   health.health_status === 'Moderate Stress' ? 'status-moderate' : 'status-stressed';
+                healthIndicator.className = 'status-indicator ' + statusClass;
+                document.getElementById('healthLabel').textContent = health.health_status;
+                document.getElementById('healthLabel').style.color = statusClass === 'status-healthy' ? '#10b981' : 
+                                                                       statusClass === 'status-moderate' ? '#f59e0b' : '#ef4444';
+                
+                // Create health factors for chart
+                const healthFactors = {
+                    moisture: health.probabilities.healthy > 0.7 ? 'Good' : 'Stress',
+                    temperature: health.probabilities.healthy > 0.7 ? 'Good' : 'Stress',
+                    humidity: health.probabilities.healthy > 0.7 ? 'Good' : 'Stress',
+                    light: health.probabilities.healthy > 0.7 ? 'Good' : 'Stress'
+                };
+                updateHealthChart(healthFactors);
+                
+                // Format recommendations
+                let healthRecommendationHtml = '';
+                if (health.recommendations && health.recommendations.length > 0) {
+                    healthRecommendationHtml = health.recommendations.map(r => '• ' + r).join('<br>');
+                } else {
+                    healthRecommendationHtml = '✅ Crops are in good condition. Continue current management practices.';
+                }
+                document.getElementById('healthRecommendation').innerHTML = healthRecommendationHtml;
+                
+                // Update yield prediction
+                const yieldPred = data.yield_prediction;
+                document.getElementById('yieldAmount').textContent = yieldPred.predicted_yield_kg_per_ha.toLocaleString();
+                document.getElementById('harvestDate').textContent = yieldPred.optimal_harvest_date;
+                updateYieldChart(yieldPred);
+                
+                // Update anomalies
+                const anomalies = data.anomalies;
+                if (anomalies && anomalies.length > 0) {
+                    document.getElementById('systemStatus').innerHTML = '<span style="color: #ef4444;">⚠️ ' + anomalies.length + ' Anomalies Detected</span>';
+                    const anomalyList = document.getElementById('anomalyList');
+                    anomalyList.innerHTML = anomalies.map(a => `
+                        <li class="anomaly-item">
+                            <strong>${a.type}</strong> (${a.severity})<br>
+                            ${a.message}<br>
+                            <span class="anomaly-time">${new Date(a.timestamp).toLocaleTimeString()}</span>
+                        </li>
+                    `).join('');
+                    
+                    // Update alerts
+                    const criticalAnomalies = anomalies.filter(a => a.severity === 'CRITICAL' || a.severity === 'WARNING');
+                    if (criticalAnomalies.length > 0) {
+                        const alertsHtml = criticalAnomalies.map(a => `
+                            <div class="alert-box ${a.severity === 'CRITICAL' ? 'alert-critical' : ''}">
+                                <strong>${a.type}</strong><br>
+                                ${a.message}
+                            </div>
+                        `).join('');
+                        document.getElementById('alertsContainer').innerHTML = alertsHtml;
+                    } else {
+                        document.getElementById('alertsContainer').innerHTML = '<p style="text-align: center; color: #666;">No critical alerts</p>';
+                    }
+                } else {
+                    document.getElementById('systemStatus').innerHTML = '<span style="color: #10b981;">✅ All Systems Normal</span>';
+                    document.getElementById('anomalyList').innerHTML = '<li style="text-align: center; color: #666;">No anomalies detected</li>';
+                    document.getElementById('alertsContainer').innerHTML = '<p style="text-align: center; color: #666;">No active alerts</p>';
+                }
+                
+                // Update trends chart
+                updateTrendsChart();
+                
+                // Update connection status
+                statusEl.textContent = '✅ Connected to Backend';
+                statusEl.style.color = '#10b981';
+                
+            } catch (error) {
+                console.error('Backend connection error:', error);
+                isBackendConnected = false;
+                statusEl.textContent = '❌ Backend Not Connected - Please start backend_server.py';
+                statusEl.style.color = '#ef4444';
+                
+                // Show connection instructions
+                if (!document.getElementById('backendInstructions')) {
+                    const instructions = document.createElement('div');
+                    instructions.id = 'backendInstructions';
+                    instructions.className = 'alert-box alert-critical';
+                    instructions.innerHTML = `
+                        <strong>⚠️ Backend Not Running</strong><br>
+                        To connect real sensors and AI models:<br>
+                        1. Open terminal and run: <code>python backend_server.py</code><br>
+                        2. Click "🔄 Fetch Latest Data" button above<br>
+                        3. Dashboard will update with real sensor data
+                    `;
+                    instructions.style.marginTop = '15px';
+                    document.querySelector('header').appendChild(instructions);
+                }
+            }
+        }
+
+        // Chart Updates
+        function updateHealthChart(factors) {
+            const data = [{
+                x: Object.keys(factors),
+                y: Object.values(factors).map(v => v === 'Good' ? 1 : 0),
+                type: 'bar',
+                marker: {
+                    color: Object.values(factors).map(v => v === 'Good' ? '#10b981' : '#ef4444')
+                }
+            }];
+
+            const layout = {
+                margin: { t: 10, b: 40, l: 40, r: 10 },
+                yaxis: { title: '', showticklabels: false, range: [0, 1.2] },
+                xaxis: { title: '' },
+                showlegend: false
+            };
+
+            Plotly.newPlot('healthChart', data, layout, { responsive: true, displayModeBar: false });
+        }
+
+        function updateYieldChart(yieldPrediction) {
+            const daysToHarvest = yieldPrediction ? yieldPrediction.days_to_harvest : 30;
+            const predictedYield = yieldPrediction ? yieldPrediction.predicted_yield_kg_per_ha : 5000;
+            const currentYield = yieldPrediction ? yieldPrediction.current_yield_estimate : 4500;
+            
+            const days = Array.from({length: daysToHarvest + 5}, (_, i) => i + 1);
+            const yieldGrowth = days.map(d => {
+                const progress = d / daysToHarvest;
+                return currentYield + (predictedYield - currentYield) * Math.min(progress, 1);
+            });
+
+            const data = [{
+                x: days,
+                y: yieldGrowth,
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'tozeroy',
+                line: { color: '#667eea', width: 3 }
+            }];
+
+            const layout = {
+                margin: { t: 10, b: 40, l: 60, r: 10 },
+                xaxis: { title: 'Days to Harvest' },
+                yaxis: { title: 'Yield (kg/ha)' },
+                showlegend: false
+            };
+
+            Plotly.newPlot('yieldChart', data, layout, { responsive: true, displayModeBar: false });
+        }
+
+        function updateTrendsChart() {
+            const timestamps = historicalData.timestamps.map(t => t.toLocaleTimeString());
+
+            const traces = [
+                {
+                    x: timestamps,
+                    y: historicalData.moisture,
+                    name: 'Moisture (%)',
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: { color: '#3b82f6', width: 2 }
+                },
+                {
+                    x: timestamps,
+                    y: historicalData.temperature,
+                    name: 'Temperature (°C)',
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: { color: '#ef4444', width: 2 },
+                    yaxis: 'y2'
+                },
+                {
+                    x: timestamps,
+                    y: historicalData.humidity,
+                    name: 'Humidity (%)',
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: { color: '#10b981', width: 2 }
+                }
+            ];
+
+            const layout = {
+                margin: { t: 30, b: 60, l: 60, r: 60 },
+                xaxis: { title: 'Time' },
+                yaxis: { title: 'Moisture & Humidity (%)' },
+                yaxis2: {
+                    title: 'Temperature (°C)',
+                    overlaying: 'y',
+                    side: 'right'
+                },
+                showlegend: true,
+                legend: { x: 0, y: 1.15, orientation: 'h' }
+            };
+
+            Plotly.newPlot('trendsChart', traces, layout, { responsive: true, displayModeBar: false });
+        }
+
+        // Initialize historical data
+        initializeHistoricalData();
+        
+        // Initial dashboard update - try to connect to backend
+        updateDashboard();
+        
+        // Manual refresh function for the button
+        async function fetchRealSensorData() {
+            await updateDashboard();
+        }
+    </script>
+</body>
+</html>
