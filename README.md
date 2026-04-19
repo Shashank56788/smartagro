@@ -397,6 +397,4 @@ For questions or issues, please refer to the code comments or create an issue in
 ---
 
 **Built with ❤️ for sustainable agriculture**
-#   s m a r t a g r o  
- #   s m a r t a g r o  
- 
+#
